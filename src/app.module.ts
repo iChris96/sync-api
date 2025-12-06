@@ -1,10 +1,14 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { ConfigModule } from '@nestjs/config';
+import { TodoModule } from './todo/todo.module';
 
 @Module({
-  imports: [],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    // Makes .env variables available via ConfigService
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    TodoModule,
+  ],
 })
 export class AppModule {}
