@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Client, PageObjectResponse } from '@notionhq/client';
 import { Todo } from './entities/todo.entity';
 import { NOTION_CLIENT } from '../notion/notion.module';
-import { getTodayDateString } from '../common/utils/date.util';
+import { formatDate, getTodayDateString } from '../common/utils/date.util';
 import { NotionTodoPage } from './entities/notion-todo.type';
 import { UpdateTodoDto } from './dto/update-todo.dto';
 
@@ -29,7 +29,7 @@ export class TodoService {
       name: props.Name.title[0].plain_text,
       identity: props.Identity.multi_select[0].name,
       status: props.Status.status?.name || '',
-      date: props.Date.date?.start || null,
+      date: formatDate(props.Date.date?.start || ''),
       foodiePoints: props.FoodiePoints.number || 0,
       assignedTo: props['Assigned To'].people
         .map((person) => person.name)
@@ -50,7 +50,7 @@ export class TodoService {
       },
       sorts: [
         {
-          property: TODO_PROPERTIES.DATE,
+          property: TODO_PROPERTIES.STATUS,
           direction: 'ascending',
         },
       ],
@@ -61,8 +61,14 @@ export class TodoService {
     );
   }
 
+  async findOne(id: string): Promise<Todo> {
+    const response = await this.notion.pages.retrieve({
+      page_id: id,
+    });
+    return this.mapPageToTodo(response as NotionTodoPage);
+  }
+
   async update(id: string, updates: UpdateTodoDto): Promise<Todo> {
-    console.log({ updates });
     const properties: Record<string, any> = {};
 
     if (updates.name) {
@@ -103,8 +109,6 @@ export class TodoService {
       page_id: id,
       properties: properties,
     });
-
-    console.log({ update: response });
 
     return this.mapPageToTodo(response as unknown as NotionTodoPage);
   }

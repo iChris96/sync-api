@@ -11,7 +11,7 @@ import { TodoService } from './todo.service';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
 
-@Controller('todo')
+@Controller('todos')
 export class TodoController {
   constructor(private readonly todoService: TodoService) {}
 
@@ -20,9 +20,13 @@ export class TodoController {
   //   return this.todoService.create(createTodoDto);
   // }
 
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.todoService.findOne(id);
+  }
+
   @Get()
   findAll() {
-    console.log('findAll');
     return this.todoService.findAll();
   }
 
