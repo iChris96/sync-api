@@ -27,38 +27,44 @@ export class TodoService {
     return {
       id: page.id,
       name: props.Name.title[0].plain_text,
-      identity: props.Identity.multi_select[0].name,
+      identity: props.Identity.multi_select.map((item) => item.name).join(', '),
       status: props.Status.status?.name || '',
       date: formatDate(props.Date.date?.start || ''),
       foodiePoints: props.FoodiePoints.number || 0,
-      assignedTo: props['Assigned To'].people
-        .map((person) => person.name)
-        .join(', '),
+      assignedTo: props['Assigned To'].people.map((people) => ({
+        name: people.name ?? '',
+        email: people.person.email ?? '',
+      })),
     };
   }
 
   async findAll(dateFilter?: string): Promise<Todo[]> {
     const targetDate = dateFilter || getTodayDateString();
 
-    const response = await this.notion.dataSources.query({
-      data_source_id: this.databaseId,
-      filter: {
-        property: TODO_PROPERTIES.DATE,
-        date: {
-          equals: targetDate,
+    try {
+      const response = await this.notion.dataSources.query({
+        data_source_id: this.databaseId,
+        filter: {
+          property: TODO_PROPERTIES.DATE,
+          date: {
+            equals: targetDate,
+          },
         },
-      },
-      sorts: [
-        {
-          property: TODO_PROPERTIES.STATUS,
-          direction: 'ascending',
-        },
-      ],
-    });
+        sorts: [
+          {
+            property: TODO_PROPERTIES.STATUS,
+            direction: 'ascending',
+          },
+        ],
+      });
 
-    return response.results.map((page) =>
-      this.mapPageToTodo(page as NotionTodoPage),
-    );
+      return response.results.map((page) =>
+        this.mapPageToTodo(page as NotionTodoPage),
+      );
+    } catch (error) {
+      console.error('Error fetching todos:', error);
+      throw error;
+    }
   }
 
   async findOne(id: string): Promise<Todo> {

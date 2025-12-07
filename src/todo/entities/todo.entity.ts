@@ -5,5 +5,5 @@ export class Todo {
   status: string;
   date: string | null;
   foodiePoints: number;
-  assignedTo: string;
+  assignedTo: { name: string; email: string }[];
 }

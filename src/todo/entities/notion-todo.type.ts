@@ -29,7 +29,7 @@ export interface NotionTodoPage extends Omit<PageObjectResponse, 'properties'> {
     };
     'Assigned To': {
       type: 'people';
-      people: Array<{ name?: string }>;
+      people: Array<{ name?: string; person: { email: string } }>;
       id: string;
     };
   };
